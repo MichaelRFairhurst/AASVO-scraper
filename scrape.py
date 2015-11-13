@@ -18,7 +18,7 @@ class Observation:
 		self.observer = str(observer).strip()
 
 	def toString(self):
-		return "%s,%s,%s,%s,%s,%s" % (self.julianDate, self.calendarDate, self.magnitude, self.error, self.filter, self.observer);
+		return "%f,%s,%f,%f,%s,%s" % (self.julianDate, self.calendarDate, self.magnitude, self.error, self.filter, self.observer);
 
 def collectCurrentObservations():
 	"""Scrape directly from AASVO to get their observations into a sorted array"""
