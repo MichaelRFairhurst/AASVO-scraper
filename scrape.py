@@ -11,11 +11,11 @@ class Observation:
 			error = 0
 
 		self.julianDate = float(julianDate)
-		self.calendarDate = str(calendarDate)
+		self.calendarDate = str(calendarDate).strip()
 		self.magnitude = float(magnitude)
 		self.error = float(error)
-		self.filter = str(filter)
-		self.observer = str(observer)
+		self.filter = str(filter).strip()
+		self.observer = str(observer).strip()
 
 	def toString(self):
 		return "%s,%s,%s,%s,%s,%s" % (self.julianDate, self.calendarDate, self.magnitude, self.error, self.filter, self.observer);
@@ -25,19 +25,19 @@ def collectCurrentObservations():
 	hasNext = True
 	arr = []
 
-	pageNum = 372
+	pageNum = 1
 
 	while hasNext:
 		print 'fetching page %d' % pageNum
 		page = requests.get('https://www.aavso.org/apps/webobs/results/?star=KIC+8462852&page=%d' % pageNum)
 		tree = html.fromstring(page.content)
 
-		julianDates = tree.xpath('//tr[@class="obs tr-even"]/td[3]/text()')
-		calendarDates = tree.xpath('//tr[@class="obs tr-even"]/td[4]/text()')
-		magnitudes = tree.xpath('//tr[@class="obs tr-even"]/td[5]/a/text()')
-		errors = tree.xpath('//tr[@class="obs tr-even"]/td[6]/text()')
-		filters = tree.xpath('//tr[@class="obs tr-even"]/td[7]/text()')
-		observers = tree.xpath('//tr[@class="obs tr-even"]/td[8]/text()')
+		julianDates = tree.xpath('//tr[contains(@class,"obs")]/td[3]/text()')
+		calendarDates = tree.xpath('//tr[contains(@class,"obs")]/td[4]/text()')
+		magnitudes = tree.xpath('//tr[contains(@class,"obs")]/td[5]/a/text()')
+		errors = tree.xpath('//tr[contains(@class,"obs")]/td[6]/text()')
+		filters = tree.xpath('//tr[contains(@class,"obs")]/td[7]/text()')
+		observers = tree.xpath('//tr[contains(@class,"obs")]/td[8]/text()')
 
 		for i in range(0, len(julianDates)):
 			arr.append(Observation(julianDates[i], calendarDates[i], magnitudes[i], errors[i], filters[i], observers[i]))
@@ -98,7 +98,7 @@ def findNewObservations(previous, next):
 			new.append(next[i])
 			continue
 
-		if previous[b].julianDate > next[i].julianDate:# or (previous[b].julianDate == next[i].julianDate and previous[b].observer != next[i].observer):
+		if previous[b].julianDate < next[i].julianDate or (previous[b].julianDate == next[i].julianDate and previous[b].observer != next[i].observer):
 			print "Found new record - " + next[i].toString()
 			# This record is newer and/or from the same time but a new observer
 			new.append(next[i])
