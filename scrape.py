@@ -91,12 +91,15 @@ def findNewObservations(previous, next):
 	"""Perform a sort of merge sort on the previous and new master copies of AASVO, finding the differences, and returning them in order"""
 	b = 0
 	new = []
+
 	for i in range(0, len(next)):
-		if b < len(previous):
+		if b >= len(previous):
+			print "Found new record at the end - " + next[i].toString()
 			new.append(next[i])
 			continue
 
-		if previous[b].julianDate < next[i].julianDate or previous[b].observer != next[i].observer:
+		if previous[b].julianDate > next[i].julianDate:# or (previous[b].julianDate == next[i].julianDate and previous[b].observer != next[i].observer):
+			print "Found new record - " + next[i].toString()
 			# This record is newer and/or from the same time but a new observer
 			new.append(next[i])
 		else:
