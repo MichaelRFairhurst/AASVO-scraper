@@ -17,8 +17,24 @@ class Observation:
 		self.filter = str(filter).strip()
 		self.observer = str(observer).strip()
 
+	def cmp(self, other):
+		"""Sort by date DESC and observer ASC"""
+
+		if self.julianDate < other.julianDate:
+			return 1
+		if self.julianDate > other.julianDate:
+			return -1
+		if self.observer < other.observer:
+			return -1
+		if self.observer > other.observer:
+			return 1
+		return 0
+
 	def toString(self):
 		return "%f,%s,%f,%f,%s,%s" % (self.julianDate, self.calendarDate, self.magnitude, self.error, self.filter, self.observer);
+
+	def equals(self, other):
+		return self.julianDate == other.julianDate and self.observer == other.observer
 
 def collectCurrentObservations():
 	"""Scrape directly from AASVO to get their observations into a sorted array"""
@@ -46,11 +62,33 @@ def collectCurrentObservations():
 
 		pageNum += 1
 
-	sortObservations(arr)
-	return arr
+	# Its possible that items were added as we paged, introducing duplicates
+	return removeDuplicateObservations(arr)
 
 def sortObservations(arr):
-	arr.sort(lambda a, b: int((b.julianDate - a.julianDate)*10000))
+	arr.sort(lambda a, b: a.cmp(b))
+
+def removeDuplicateObservations(arr):
+	"""Take the first item as the 'standard,' and compare it to subsequent items, saving unique items while making them the new 'standard'"""
+	if len(arr) == 0:
+		return arr
+
+	# sort to find duplicates without O(n^2) complexity
+	sortObservations(arr)
+
+	# the first one is always unique. And we know by now that we have one
+	b = 0
+	standard = arr[b]
+	unique = [standard]
+
+	# now which others are unique? Start at index 1, compare to the stardard
+	for i in range(1, len(arr)):
+		if not arr[i].equals(standard):
+			# Its unique! Lets save it and note it our new standard
+			standard = arr[i]
+			unique.append(standard)
+
+	return unique
 
 def writeObservationsByFilename(fname, arr):
 	"""Given a filename, write out an array of observations in CSV format"""
